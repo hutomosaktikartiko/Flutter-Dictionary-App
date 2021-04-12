@@ -1,7 +1,11 @@
+import 'package:dictionary_app/bloc/dictionary_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeScreen extends StatelessWidget {
-  getDictionaryFormWidget(context) {
+  getDictionaryFormWidget(BuildContext context) {
+    final cubit = context.watch<DictionaryCubit>();
+
     return Container(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -22,6 +26,7 @@ class HomeScreen extends StatelessWidget {
             height: 32,
           ),
           TextField(
+            controller: cubit.queryController,
             decoration: InputDecoration(
                 hintText: "Search a word",
                 border: OutlineInputBorder(
@@ -36,7 +41,9 @@ class HomeScreen extends StatelessWidget {
           Container(
             width: double.infinity,
             child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  cubit.getWordSearched();
+                },
                 style: ElevatedButton.styleFrom(
                     primary: Colors.deepOrangeAccent,
                     padding: const EdgeInsets.all(15)),
@@ -47,11 +54,31 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  getLoadingWidget() {
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
+  getErrorWidget(message) {
+    return Center(
+      child: Text(message),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cubit = context.watch<DictionaryCubit>();
+
     return Scaffold(
       backgroundColor: Colors.blueGrey[900],
-      body: getDictionaryFormWidget(context),
+      body: (cubit.state is WordSearchingState)
+          ? getLoadingWidget()
+          : (cubit.state is ErrorState)
+              ? getErrorWidget("Some Error")
+              : (cubit.state is NoWordSearchState)
+                  ? getDictionaryFormWidget(context)
+                  : Container(),
     );
   }
 }
